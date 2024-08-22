@@ -1,0 +1,168 @@
+@startuml  UML Diagram with NgModule
+
+class EventEmitter<T> {
+}
+
+class TasksService {
+  -tasks: Task[]
+  +getUserTasks(userId: string): Task[]
+  +addTask(task: NewTaskData, userId: string): void
+  +removeTask(taskId: string): void
+  +updateTask(task: Task): void
+  -saveTasks(): void
+}
+
+class AppModule {
+}
+
+class TasksModule {
+}
+
+class SharedModule {
+}
+
+class AppComponent {
+  +users: User[]
+  +selectedUserId?: string
+  +selectedUser: User
+  +onSelectedUser(id: string): void
+}
+
+class UserComponent {
+  +user: User
+  +isSelected: boolean
+  +selectedUser: EventEmitter<string>
+  +onClickedUser(): void
+  +imagePath(): string
+}
+
+class TasksComponent {
+  +selectedUserName: string
+  +selectedUserId: string
+  +isAddingTask: boolean
+  +getTasksForUser(): Task[]
+  +onStartAddingTask(): void
+  +onCloseAddTask(): void
+  -taskService: TasksService
+}
+
+class TaskComponent {
+  +task: Task
+  +onComplete(): void
+  +onDelete(): void
+  -taskService: TasksService
+}
+
+class NewTaskComponent {
+  +userId: string
+  +close: EventEmitter<void>
+  +enteredTitle: string
+  +enteredSummary: string
+  +enteredDueDate: string
+  +onSubmit(): void
+  +onCancelAddingTask(): void
+  -taskService: TasksService
+}
+
+class CardComponent {
+  +ng-content
+}
+
+class HeaderComponent {
+}
+
+class User {
+  +id: string
+  +avatar: string
+  +name: string
+}
+
+class Task {
+  +id: string
+  +userId: string
+  +title: string
+  +summary?: string
+  +dueDate?: string
+  +completed: boolean
+}
+
+class NewTaskData {
+  +title: string
+  +summary: string
+  +dueDate: string
+}
+
+class "app.component.html" as AppComponentTemplate {
+  +app-header
+  +app-user [user]="user" [isSelected]="selectedUser?.id === user.id" (selectedUser)="onSelectedUser($event)"
+  +app-tasks [selectedUserName]="selectedUser!.name" [selectedUserId]="selectedUser!.id"
+}
+
+class "user.component.html" as UserComponentTemplate {
+  +app-card
+  +button [class.active]="isSelected" (click)="onClickedUser()"
+  +img [src]="imagePath" [alt]="user.name"
+  +span {{ user.name }}
+}
+
+class "tasks.component.html" as TasksComponentTemplate {
+  +app-new-task [userId]="selectedUserId" (close)="onCloseAddTask()"
+  +button (click)="onStartAddingTask()"
+  +ul
+  +li *ngFor="let task of getTasksForUser()"
+  +app-task [task]="task"
+}
+
+class "task.component.html" as TaskComponentTemplate {
+  +app-card
+  +h2 {{ task.title }}
+  +time {{ task.dueDate | date : "fullDate" }}
+  +p {{ task.summary }}
+  +button (click)="onDelete()"
+  +button (click)="onComplete()" [disabled]="task.completed"
+}
+
+class "new-task.component.html" as NewTaskComponentTemplate {
+  +dialog
+  +form (ngSubmit)="onSubmit()"
+  +input [(ngModel)]="enteredTitle"
+  +textarea [(ngModel)]="enteredSummary"
+  +input [(ngModel)]="enteredDueDate"
+  +button (click)="onCancelAddingTask()"
+}
+
+class "card.component.html" as CardComponentTemplate {
+  +ng-content
+}
+
+AppComponent --> AppComponentTemplate : uses template
+UserComponent --> UserComponentTemplate : uses template
+TasksComponent --> TasksComponentTemplate : uses template
+TaskComponent --> TaskComponentTemplate : uses template
+NewTaskComponent --> NewTaskComponentTemplate : uses template
+CardComponent --> CardComponentTemplate : uses template
+HeaderComponent --> AppComponentTemplate : uses template
+
+AppModule --> AppComponent : declares
+AppModule --> HeaderComponent : declares
+AppModule --> UserComponent : declares
+AppModule --> BrowserModule : imports
+AppModule --> SharedModule : imports
+AppModule --> TasksModule : imports
+
+TasksModule --> TasksComponent : declares
+TasksModule --> TaskComponent : declares
+TasksModule --> NewTaskComponent : declares
+TasksModule --> CommonModule : imports
+TasksModule --> FormsModule : imports
+TasksModule --> SharedModule : imports
+
+SharedModule --> CardComponent : declares
+SharedModule --> CardComponent : exports
+
+TasksComponent "1" --> "0..*" Task : contains
+TasksComponent --> TasksService : -taskService
+TaskComponent --> TasksService : -taskService
+NewTaskComponent --> TasksService : -taskService
+
+@enduml
